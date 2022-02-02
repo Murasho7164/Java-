@@ -7,12 +7,15 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -20,15 +23,21 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
  
 public class DrawClientTcp extends Application {
  
     // ルートノード
     private final Group root = new Group();
+    BorderPane bp=new BorderPane();
     // ソケット
     private Socket socket = null;
     // データ送信用Writer
@@ -40,14 +49,16 @@ public class DrawClientTcp extends Application {
     
     //描画するペンについての変数
     public Color drawColor=Color.BLACK;
-    public int drawRadius=2;
+    public int drawRadius=2;//描写する太さ
+    public int penRadius=2;
+    public int eraserRadius=4;
  
     @Override
     public void start(Stage primaryStage) throws Exception {
         // Stageのタイトル
         primaryStage.setTitle(getClass().getName());
         // Stageのサイズ
-        primaryStage.setWidth(800);
+        primaryStage.setWidth(1200);
         primaryStage.setHeight(800);
         // Stageの終了ボタンが押下された時の対応
         primaryStage.setOnCloseRequest((event) -> {
@@ -65,18 +76,23 @@ public class DrawClientTcp extends Application {
                 }
                 // サーバに情報送信
                 writer.println(str);
-                // マウス座標を中心とする赤い円を描画
-                root.getChildren().add(new Circle(event.getX(), event.getY(), 2, Color.RED));
+                // マウス座標を中心とする白い円を描画
+                root.getChildren().add(new Circle(event.getX(), event.getY(), 1,Color.WHITE));
             }
         });
+        
         // StageにSceneを貼付け
         primaryStage.setScene(scene);
- 
         // IPアドレスとポート番号設定用ペインを作成し，ルートに貼付け        
-        root.getChildren().add(new NetworkConfigurePane());
+        //root.getChildren().add(new NetworkConfigurePane());
         
-        root.getChildren().add(new MenuPane());
- 
+        //root.getChildren().add(new MenuPane());
+        
+        bp.setTop(new NetworkConfigurePane());
+        bp.setLeft(new MenuPane());
+        
+        root.getChildren().add(bp);
+        
         // Stageの表示
         primaryStage.show();
     }
@@ -126,8 +142,7 @@ public class DrawClientTcp extends Application {
             
             // GridPaneに各コンポーネント追加
             getChildren().addAll(labelIpAddress, textFieldServerIpAddress, labelPortNumber, textFieldServerPortNumber, buttonEnter, buttonExit);
-            
-            
+                     
             
             //  コンポーネント表示設定切替
             setConnection(true);
@@ -205,25 +220,83 @@ public class DrawClientTcp extends Application {
         }
     }
     
-    private class MenuPane extends GridPane{
-    	 // ペンの色のメニュー
-        private final Button buttonBlack =new Button("黒");
-        private final Button buttonRed =new Button("赤");
-        private final Button buttonGreen =new Button("緑");
-        private final Button buttonBlue =new Button("青");
+    private class MenuPane extends VBox{
     	
-    	public MenuPane() {
-    		GridPane.setConstraints(buttonBlack, 0, 3);
-            GridPane.setConstraints(buttonRed, 1, 3);
-            GridPane.setConstraints(buttonGreen, 2, 3);
-            GridPane.setConstraints(buttonBlue, 3, 3);
+    	List<Button> buttonList=new ArrayList<>();
+    	
+    	
+        public MenuPane() {
+        	// ペン(+消しゴム)のリスト
+        	//ペンリストの設定    この辺りをすっきりさせたい
+        	//名称設定
+        	buttonList.add(new Button("黒"));
+        	buttonList.add(new Button("赤"));
+        	buttonList.add(new Button("オレンジ"));
+        	buttonList.add(new Button("黄"));
+        	buttonList.add(new Button("緑"));
+        	buttonList.add(new Button("青"));
+        	buttonList.add(new Button("紫"));
+        	buttonList.add(new Button("消しゴム"));
+        	
+        	//各ボタンの色
+        	buttonList.get(0).setBackground(new Background(new BackgroundFill(Color.BLACK,null,null)));
+        	buttonList.get(0).setTextFill(Color.WHITE);
+        	buttonList.get(1).setBackground(new Background(new BackgroundFill(Color.RED,null,null)));
+        	buttonList.get(2).setBackground(new Background(new BackgroundFill(Color.ORANGE,null,null)));
+        	buttonList.get(3).setBackground(new Background(new BackgroundFill(Color.YELLOW,null,null)));
+        	buttonList.get(4).setBackground(new Background(new BackgroundFill(Color.GREEN,null,null)));
+        	buttonList.get(5).setBackground(new Background(new BackgroundFill(Color.BLUE,null,null)));
+        	buttonList.get(6).setBackground(new Background(new BackgroundFill(Color.PURPLE,null,null)));
+        	buttonList.get(7).setBackground(new Background(new BackgroundFill(Color.WHITE,null,null)));
+        	
+        	//サイズ
+            for(int i=0;i<8;i++) {
+            	buttonList.get(i).setPrefHeight(40);
+            	buttonList.get(i).setPrefWidth(100);
+            	buttonList.get(i).setFont( new Font(16));
+            }
+            VBox vBox = new VBox();
+            vBox.setPadding(new Insets(15, 12, 15, 12));
+            vBox.setSpacing(100);
+            vBox.setStyle("-fx-background-color: #FFFFFF;");
             
-          //GridPlaneにペンの種類のメニューコンポ－ネント追加
-            getChildren().addAll(buttonBlack,buttonRed,buttonGreen,buttonBlue);
-    		
-    	}
-    	
-    	
+            
+            getChildren().addAll(buttonList);
+        
+            buttonList.get(0).setOnAction((event) -> {
+                drawColor=Color.BLACK;
+                drawRadius=penRadius;
+            });
+            buttonList.get(1).setOnAction((event) -> {
+                drawColor=Color.RED;
+                drawRadius=penRadius;
+            });
+            buttonList.get(2).setOnAction((event) -> {
+                drawColor=Color.ORANGE;
+                drawRadius=penRadius;
+            });
+            buttonList.get(3).setOnAction((event) -> {
+                drawColor=Color.YELLOW;
+                drawRadius=penRadius;
+            });
+            buttonList.get(4).setOnAction((event) -> {
+                drawColor=Color.GREEN;
+                drawRadius=penRadius;
+            });
+            buttonList.get(5).setOnAction((event) -> {
+                drawColor=Color.BLUE;
+                drawRadius=penRadius;
+            });
+            buttonList.get(6).setOnAction((event) -> {
+                drawColor=Color.PURPLE;
+                drawRadius=penRadius;
+            });
+            buttonList.get(7).setOnAction((event) -> {
+                drawColor=Color.WHITE;
+                drawRadius=eraserRadius;
+            });
+        }
+        
     	
     }
     
