@@ -48,10 +48,8 @@ public class DrawClientTcp extends Application {
     private ReceiverTask receiverTask = null;
     
     //描画するペンについての変数
-    public Color drawColor=Color.BLACK;
-    public int drawRadius=2;//描写する太さ
-    public int penRadius=2;
-    public int eraserRadius=4;
+    public static Color drawColor=Color.BLACK;
+    public static int drawRadius=2;//描写する太さ
  
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -70,9 +68,9 @@ public class DrawClientTcp extends Application {
         scene.setOnMouseDragged((event) -> {
             if (socket != null && socket.isConnected()) {
                 // マウスの座標から文字列生成
-                String str = event.getX() + "," + event.getY();
+                String str = event.getX() + "," + event.getY()+ "," + drawRadius+","+drawColor;
                 for (int i = 0; i < 1000; ++i) {
-                    str += "," + event.getX() + "," + event.getY();
+                    str += "," + event.getX() + "," + event.getY()+ "," + drawRadius+","+drawColor;
                 }
                 // サーバに情報送信
                 writer.println(str);
@@ -211,9 +209,10 @@ public class DrawClientTcp extends Application {
             while ((inputLine = reader.readLine()) != null) {
                 // 受信データを","で分解              
                 String[] position = inputLine.split(",");
+                
                 Platform.runLater(() -> {
-                    // 1番目の要素を中心のX座標，2番目の要素を中心のY座標とする青い円を描画
-                    root.getChildren().add(new Circle(Double.valueOf(position[0]), Double.valueOf(position[1]), drawRadius, drawColor));
+                    // 1番目の要素を中心のX座標，2番目の要素を中心のY座標とする円を描画
+                    root.getChildren().add(new Circle(Double.valueOf(position[0]), Double.valueOf(position[1]), Integer.valueOf(position[2]), Color.valueOf(position[3])));
                 });
             }
             return null;
@@ -238,6 +237,11 @@ public class DrawClientTcp extends Application {
         	buttonList.add(new Button("紫"));
         	buttonList.add(new Button("消しゴム"));
         	
+        	buttonList.add(new Button("太"));
+        	buttonList.add(new Button("中"));
+        	buttonList.add(new Button("細"));
+        	
+        	
         	//各ボタンの色
         	buttonList.get(0).setBackground(new Background(new BackgroundFill(Color.BLACK,null,null)));
         	buttonList.get(0).setTextFill(Color.WHITE);
@@ -249,51 +253,55 @@ public class DrawClientTcp extends Application {
         	buttonList.get(6).setBackground(new Background(new BackgroundFill(Color.PURPLE,null,null)));
         	buttonList.get(7).setBackground(new Background(new BackgroundFill(Color.WHITE,null,null)));
         	
+        	
+        	
         	//サイズ
-            for(int i=0;i<8;i++) {
+            for(int i=0;i<buttonList.size();i++) {
             	buttonList.get(i).setPrefHeight(40);
             	buttonList.get(i).setPrefWidth(100);
-            	buttonList.get(i).setFont( new Font(16));
+            	buttonList.get(i).setFont(new Font(16));
             }
             VBox vBox = new VBox();
             vBox.setPadding(new Insets(15, 12, 15, 12));
-            vBox.setSpacing(100);
-            vBox.setStyle("-fx-background-color: #FFFFFF;");
+            vBox.setSpacing(10);
+            //vBox.setStyle("-fx-background-color: #FFFFFF;");
+            
             
             
             getChildren().addAll(buttonList);
         
             buttonList.get(0).setOnAction((event) -> {
                 drawColor=Color.BLACK;
-                drawRadius=penRadius;
             });
             buttonList.get(1).setOnAction((event) -> {
                 drawColor=Color.RED;
-                drawRadius=penRadius;
             });
             buttonList.get(2).setOnAction((event) -> {
                 drawColor=Color.ORANGE;
-                drawRadius=penRadius;
             });
             buttonList.get(3).setOnAction((event) -> {
                 drawColor=Color.YELLOW;
-                drawRadius=penRadius;
             });
             buttonList.get(4).setOnAction((event) -> {
                 drawColor=Color.GREEN;
-                drawRadius=penRadius;
             });
             buttonList.get(5).setOnAction((event) -> {
                 drawColor=Color.BLUE;
-                drawRadius=penRadius;
             });
             buttonList.get(6).setOnAction((event) -> {
                 drawColor=Color.PURPLE;
-                drawRadius=penRadius;
             });
             buttonList.get(7).setOnAction((event) -> {
                 drawColor=Color.WHITE;
-                drawRadius=eraserRadius;
+            });
+            buttonList.get(8).setOnAction((event) -> {
+                drawRadius=6;
+            });
+            buttonList.get(9).setOnAction((event) -> {
+                drawRadius=2;
+            });
+            buttonList.get(10).setOnAction((event) -> {
+                drawRadius=1;
             });
         }
         
